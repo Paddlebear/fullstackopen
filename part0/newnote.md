@@ -29,7 +29,7 @@ sequenceDiagram
   deactivate server
 
   Note right of browser: browser executes the JS code to request the notes
-  browser-->>server: GEThttps://studies.cs.helsinki.fi/exampleapp/data.json
+  browser-->>server: GET https://studies.cs.helsinki.fi/exampleapp/data.json
   activate server
   server-->>browser: [..., {"content": "new note", "date": "2025-06-05"}]
   deactivate server
