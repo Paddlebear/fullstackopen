@@ -69,10 +69,10 @@ const App = () => {
     }
     const alreadyExists = persons.some(person => person.name === newName)
     if (alreadyExists) {
+      const personToUpdate = persons.find((person) => person.name === newName)
+      const idToUpdate = personToUpdate.id
+      console.log(`updating person with id ${idToUpdate}`)
       if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
-        const personToUpdate = persons.find((person) => person.name === newName)
-        const idToUpdate = personToUpdate.id
-        console.log(`updating person with id ${idToUpdate}`)
         personService.update(idToUpdate, personObject).then(() => {
           personService.getAll().then(updatedPersons => {
             setPersons(updatedPersons)
@@ -81,6 +81,8 @@ const App = () => {
           })
         })
         console.log(`updated person with id ${idToUpdate}`);
+      } else {
+        console.log('updating canceled');
       }
     }
     else {
