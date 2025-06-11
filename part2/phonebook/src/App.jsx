@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import personService from './services/persons'
 
 const Filter = ({ newSearch, handleFilter }) => {
   return (
@@ -26,26 +27,31 @@ const PersonForm = ({ newName, newNumber, handleAddName, handleNewName, handleNe
   )
 }
 
-const Persons = ({ persons }) => {
+const Persons = ({ persons, handleDelete }) => {
   return (
     <div>
       {persons.map(person =>
-        <p key={person.name}>{person.name} {person.number}</p>
+        <p key={person.name}>{person.name} {person.number}
+          <button onClick={event => handleDelete(event, person.name)}>delete</button>
+        </p>
       )}
     </div>
   )
 }
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
-  ])
+  const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newSearch, setNewSearch] = useState('')
+
+  useEffect(() => {
+    console.log('effect')
+    personService.getAll().then(initialPersons => {
+      setPersons(initialPersons)
+    })
+  }, [])
+  //console.log('render', persons.length, 'person data')
 
   const handleNewName = (event) => {
     setNewName(event.target.value)
@@ -63,12 +69,45 @@ const App = () => {
     }
     const alreadyExists = persons.some(person => person.name === newName)
     if (alreadyExists) {
-      alert(`${newName} is already added to phonebook`)
+      if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
+        const personToUpdate = persons.find((person) => person.name === newName)
+        const idToUpdate = personToUpdate.id
+        console.log(`updating person with id ${idToUpdate}`)
+        personService.update(idToUpdate, personObject).then(() => {
+          personService.getAll().then(updatedPersons => {
+            setPersons(updatedPersons)
+            setNewName('')
+            setNewNumber('')
+          })
+        })
+        console.log(`updated person with id ${idToUpdate}`);
+      }
     }
     else {
-      setPersons(persons.concat(personObject))
-      setNewName('')
-      setNewNumber('')
+      personService.create(personObject).then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson))
+        setNewName('')
+        setNewNumber('')
+      })
+    }
+  }
+
+  const handleDelete = (event, name) => {
+    event.preventDefault()
+    const personToDelete = persons.find((person) => person.name === name)
+    const idToDelete = personToDelete.id
+    console.log(`deleting ${name}`)
+    if (window.confirm(`Delete ${name}?`)) {
+      console.log(`deleting person with id ${idToDelete}`);
+      personService.remove(idToDelete).then(() => {
+        personService.getAll().then(updatedPersons => {
+          setPersons(updatedPersons)
+        })
+      })
+      console.log(`deleted person with id ${idToDelete}`);
+
+    } else {
+      console.log('deleting canceled');
     }
   }
 
@@ -85,7 +124,7 @@ const App = () => {
       <h3>Add a new</h3>
       <PersonForm newName={newName} newNumber={newNumber} handleAddName={handleAddName} handleNewName={handleNewName} handleNewNumber={handleNewNumber} />
       <h3>Numbers</h3>
-      <Persons persons={personsToShow}/>
+      <Persons persons={personsToShow} handleDelete={handleDelete} />
     </div>
   )
 }
