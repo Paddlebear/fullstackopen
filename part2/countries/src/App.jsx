@@ -32,7 +32,7 @@ const App = () => {
         setSearch('')
     }
 
-    const countriesToShow = countries.filter(country => country.name.common.toLowerCase().includes(search))
+    const countriesToShow = countries.filter(country => country.name.common.toLowerCase().includes(search.toLowerCase))
 
     return (
         <div>
