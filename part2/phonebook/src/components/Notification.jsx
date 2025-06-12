@@ -1,5 +1,7 @@
+import { useState } from 'react'
+
 const Notification = ({ message, notificationStyle }) => {
-    
+
     const goodNotificationStyle = {
         color: 'darkgreen',
         background: 'lightgrey',
@@ -23,14 +25,9 @@ const Notification = ({ message, notificationStyle }) => {
         return null
     }
 
-    let style = goodNotificationStyle
-
-    if (notificationStyle === 'good') {
-        style = goodNotificationStyle
-    }
-    else {
-        style = badNotificationStyle
-    }
+    const style = notificationStyle === 'good'
+        ? goodNotificationStyle
+        : badNotificationStyle
 
     return (
         <div style={style} className='error'>
