@@ -15,7 +15,7 @@ if (process.argv.length < 5) {
   process.exit(1)
 }
 
-const password = process.argv[2]
+//const password = process.argv[2]
 const newName = process.argv[3].toString()
 const newNumber = process.argv[4].toString()
 
@@ -37,7 +37,7 @@ const person = new Person({
   number: newNumber
 })
 
-person.save().then(result => {
+person.save().then(() => {
   console.log(`added ${newName} number ${newNumber} to phonebook`)
   mongoose.connection.close()
 })
