@@ -37,47 +37,56 @@ const App = () => {
     }
     const alreadyExists = persons.some(person => person.name === newName)
     if (alreadyExists) {
-      const personToUpdate = persons.find((person) => person.name === newName)
+      const personToUpdate = persons.find(person => person.name === newName)
       const idToUpdate = personToUpdate.id
-      console.log(`updating person with id ${idToUpdate}`)
       if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
-        personService.update(idToUpdate, personObject).then(() => {
-          personService.getAll().then(updatedPersons => {
-            setPersons(updatedPersons)
-            setNotificationStyle('good')
-            setErrorMessage(`Updated ${newName}`)
-            setTimeout(() => {
-              setErrorMessage(null)
-            }, 5000)
+        personService
+          .update(idToUpdate, personObject)
+          .then(() => {
+            personService.getAll().then(updatedPersons => {
+              setPersons(updatedPersons)
+              setNotificationStyle('good')
+              setErrorMessage(`Updated ${newName}`)
+              setTimeout(() => setErrorMessage(null), 5000)
+              setNewName('')
+              setNewNumber('')
+            })
+          })
+          .catch(error => {
+            setNotificationStyle('bad')
+            setErrorMessage(
+              error.response && error.response.data && error.response.data.error
+                ? error.response.data.error
+                : `Information of ${newName} has already been removed from server`
+            )
+            setTimeout(() => setErrorMessage(null), 5000)
+            setPersons(
+              error.response && error.response.data && error.response.data.error
+              ? persons
+              : persons.filter(person => person.id !== idToUpdate)
+            )
             setNewName('')
             setNewNumber('')
+            console.log(error.response.data.error)
           })
-        }).catch(error => {
-          setNotificationStyle('bad')
-          setErrorMessage(`Information of ${newName} has already been removed from server`)
-          setTimeout(() => {
-            setErrorMessage(null)
-          }, 5000)
-          setPersons(persons.filter(person => person.id !== idToUpdate))
+      }
+    } else {
+      personService
+        .create(personObject)
+        .then(returnedPerson => {
+          setPersons(persons.concat(returnedPerson))
+          setNotificationStyle('good')
+          setErrorMessage(`Added ${newName}`)
+          setTimeout(() => setErrorMessage(null), 5000)
           setNewName('')
           setNewNumber('')
         })
-        console.log(`updated person with id ${idToUpdate}`);
-      } else {
-        console.log('updating canceled');
-      }
-    }
-    else {
-      personService.create(personObject).then(returnedPerson => {
-        setPersons(persons.concat(returnedPerson))
-        setNotificationStyle('good')
-        setErrorMessage(`Added ${newName}`)
-        setTimeout(() => {
-          setErrorMessage(null)
-        }, 5000)
-        setNewName('')
-        setNewNumber('')
-      })
+        .catch(error => {
+          setNotificationStyle('bad')
+          setErrorMessage(error.response.data.error)
+          setTimeout(() => setErrorMessage(null), 5000)
+          console.log(error.response.data.error)
+        })
     }
   }
 
@@ -104,6 +113,7 @@ const App = () => {
         setPersons(persons.filter(person => person.id !== idToDelete))
         setNewName('')
         setNewNumber('')
+        console.log(error.response.data.error)
       })
       console.log(`deleted person with id ${idToDelete}`);
 
